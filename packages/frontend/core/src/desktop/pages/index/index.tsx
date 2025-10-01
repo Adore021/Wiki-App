@@ -26,6 +26,7 @@ import {
   useNavigateHelper,
 } from '../../../components/hooks/use-navigate-helper';
 import { WorkspaceNavigator } from '../../../components/workspace-selector';
+import { WorkspaceLauncher } from '../../../components/workspace-launcher';
 import { AuthService } from '../../../modules/cloud';
 import { AppContainer } from '../../components/app-container';
 
@@ -185,23 +186,17 @@ export const Component = ({
     return fallback ?? <AppContainer fallback />;
   }
 
-  // TODO(@eyhn): We need a no workspace page
+  // Show workspace launcher when no workspaces exist
   return (
     children ?? (
-      <div
-        style={{
-          position: 'fixed',
-          left: 'calc(50% - 150px)',
-          top: '50%',
+      <WorkspaceLauncher
+        onSelectWorkspace={(workspaceId) => {
+          openPage(workspaceId, 'all');
         }}
-      >
-        <WorkspaceNavigator
-          open={true}
-          menuContentOptions={{
-            forceMount: true,
-          }}
-        />
-      </div>
+        onCreateWorkspace={(workspace) => {
+          openPage(workspace.id, 'all');
+        }}
+      />
     )
   );
 };

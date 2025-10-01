@@ -14,38 +14,9 @@ import { AddWorkspace } from './add-workspace';
 import * as styles from './index.css';
 import { AFFiNEWorkspaceList } from './workspace-list';
 
+// SignInItem disabled for offline-first mode
 export const SignInItem = () => {
-  const globalDialogService = useService(GlobalDialogService);
-
-  const t = useI18n();
-
-  const onClickSignIn = useCallback(() => {
-    track.$.navigationPanel.workspaceList.requestSignIn();
-    globalDialogService.open('sign-in', {});
-  }, [globalDialogService]);
-
-  return (
-    <MenuItem
-      className={styles.menuItem}
-      onClick={onClickSignIn}
-      data-testid="cloud-signin-button"
-    >
-      <div className={styles.signInWrapper}>
-        <div className={styles.iconContainer}>
-          <Logo1Icon />
-        </div>
-
-        <div className={styles.signInTextContainer}>
-          <div className={styles.signInTextPrimary}>
-            {t['com.affine.workspace.cloud.auth']()}
-          </div>
-          <div className={styles.signInTextSecondary}>
-            {t['com.affine.workspace.cloud.description']()}
-          </div>
-        </div>
-      </div>
-    </MenuItem>
-  );
+  return null;
 };
 
 interface UserWithWorkspaceListProps {
@@ -75,14 +46,7 @@ export const UserWithWorkspaceList = ({
   }, [globalDialogService]);
 
   const onNewWorkspace = useCallback(() => {
-    const enableLocalWorkspace =
-      BUILD_CONFIG.isNative ||
-      defaultServerService.server.config$.value.features.includes(
-        ServerFeature.LocalWorkspace
-      );
-    if (!isAuthenticated && !enableLocalWorkspace) {
-      return openSignInModal();
-    }
+    // In offline-first mode, always allow creating workspaces
     track.$.navigationPanel.workspaceList.createWorkspace();
     globalDialogService.open('create-workspace', {}, payload => {
       if (payload) {
@@ -92,11 +56,8 @@ export const UserWithWorkspaceList = ({
     onEventEnd?.();
   }, [
     globalDialogService,
-    defaultServerService,
-    isAuthenticated,
     onCreatedWorkspace,
     onEventEnd,
-    openSignInModal,
   ]);
 
   const onAddWorkspace = useCallback(() => {

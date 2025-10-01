@@ -8,48 +8,20 @@ import {
   configureLocalStorageStateStorageImpls,
   NbstoreProvider,
 } from '@affine/core/modules/storage';
+import { OfflineNbstoreProvider } from '@affine/core/modules/storage/impls/offline-nbstore';
 import { PopupWindowProvider } from '@affine/core/modules/url';
 import { configureBrowserWorkbenchModule } from '@affine/core/modules/workbench';
 import { configureBrowserWorkspaceFlavours } from '@affine/core/modules/workspace-engine';
 import createEmotionCache from '@affine/core/utils/create-emotion-cache';
-import { getWorkerUrl } from '@affine/env/worker';
-import { StoreManagerClient } from '@affine/nbstore/worker/client';
+// Worker imports removed for offline-first mode
 import { CacheProvider } from '@emotion/react';
 import { Framework, FrameworkRoot, getCurrentStore } from '@toeverything/infra';
-import { OpClient } from '@toeverything/infra/op';
 import { Suspense } from 'react';
 import { RouterProvider } from 'react-router-dom';
 
 const cache = createEmotionCache();
 
-let storeManagerClient: StoreManagerClient;
-
-const workerUrl = getWorkerUrl('nbstore');
-
-if (
-  window.SharedWorker &&
-  localStorage.getItem('disableSharedWorker') !== 'true'
-) {
-  const worker = new SharedWorker(workerUrl, {
-    name: 'affine-shared-worker',
-  });
-  storeManagerClient = new StoreManagerClient(new OpClient(worker.port));
-} else {
-  const worker = new Worker(workerUrl);
-  storeManagerClient = new StoreManagerClient(new OpClient(worker));
-}
-window.addEventListener('beforeunload', () => {
-  storeManagerClient.dispose();
-});
-window.addEventListener('focus', () => {
-  storeManagerClient.resume();
-});
-window.addEventListener('click', () => {
-  storeManagerClient.resume();
-});
-window.addEventListener('blur', () => {
-  storeManagerClient.pause();
-});
+// Web worker initialization removed for offline-first mode
 
 const future = {
   v7_startTransition: true,
@@ -60,11 +32,9 @@ configureCommonModules(framework);
 configureBrowserWorkbenchModule(framework);
 configureLocalStorageStateStorageImpls(framework);
 configureBrowserWorkspaceFlavours(framework);
-framework.impl(NbstoreProvider, {
-  openStore(key, options) {
-    return storeManagerClient.open(key, options);
-  },
-});
+// Use offline-first NBStore provider (disables sync)
+const offlineProvider = new OfflineNbstoreProvider();
+framework.impl(NbstoreProvider, offlineProvider);
 framework.impl(PopupWindowProvider, {
   open: (target: string) => {
     const targetUrl = new URL(target);

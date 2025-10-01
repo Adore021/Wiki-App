@@ -12,35 +12,7 @@ import {
 } from '../add-workspace/index.css';
 import { addServerDividerWrapper } from './index.css';
 
+// AddServer component disabled for offline-first mode
 export const AddServer = () => {
-  const t = useI18n();
-  const globalDialogService = useService(GlobalDialogService);
-
-  const onAddServer = useCallback(() => {
-    globalDialogService.open('sign-in', { step: 'addSelfhosted' });
-  }, [globalDialogService]);
-
-  if (!BUILD_CONFIG.isNative) {
-    return null;
-  }
-
-  return (
-    <>
-      <div className={addServerDividerWrapper}>
-        <Divider size="thinner" />
-      </div>
-      <MenuItem
-        block={true}
-        prefixIcon={<PlusIcon />}
-        prefixIconClassName={prefixIcon}
-        onClick={onAddServer}
-        data-testid="new-server"
-        className={ItemContainer}
-      >
-        <div className={ItemText}>
-          {t['com.affine.workspaceList.addServer']()}
-        </div>
-      </MenuItem>
-    </>
-  );
+  return null;
 };
