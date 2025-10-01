@@ -1,4 +1,4 @@
-import { wrapCreateBrowserRouterV6 } from '@sentry/react';
+// Sentry import disabled for offline-first mode
 import { useEffect, useState } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import {
@@ -94,9 +94,8 @@ export const topLevelRoutes = [
       {
         path: '/try-cloud',
         loader: () => {
-          return redirect(
-            `/sign-in?redirect_uri=${encodeURIComponent('/?initCloud=true')}`
-          );
+          // In offline mode, redirect directly to main page instead of sign-in
+          return redirect('/?initCloud=true');
         },
       },
       {
@@ -131,44 +130,37 @@ export const topLevelRoutes = [
           );
         },
       },
+      // Authentication routes disabled for offline-first mode
+      // All auth-related routes now redirect to main page
       {
         path: '/auth/:authType',
-        lazy: () => import(/* webpackChunkName: "auth" */ './pages/auth/auth'),
+        loader: () => redirect('/'),
       },
       {
         path: '/sign-In',
-        lazy: () =>
-          import(/* webpackChunkName: "auth" */ './pages/auth/sign-in'),
+        loader: () => redirect('/'),
       },
       {
         path: '/magic-link',
-        lazy: () =>
-          import(/* webpackChunkName: "auth" */ './pages/auth/magic-link'),
+        loader: () => redirect('/'),
       },
       {
         path: '/oauth/login',
-        lazy: () =>
-          import(/* webpackChunkName: "auth" */ './pages/auth/oauth-login'),
+        loader: () => redirect('/'),
       },
       {
         path: '/oauth/callback',
-        lazy: () =>
-          import(/* webpackChunkName: "auth" */ './pages/auth/oauth-callback'),
+        loader: () => redirect('/'),
       },
       // deprecated, keep for old client compatibility
-      // TODO(@forehalo): remove
       {
         path: '/desktop-signin',
-        lazy: () =>
-          import(/* webpackChunkName: "auth" */ './pages/auth/oauth-login'),
+        loader: () => redirect('/'),
       },
       // deprecated, keep for old client compatibility
-      // use '/sign-in'
-      // TODO(@forehalo): remove
       {
         path: '/signIn',
-        lazy: () =>
-          import(/* webpackChunkName: "auth" */ './pages/auth/sign-in'),
+        loader: () => redirect('/'),
       },
       {
         path: '/open-app/:action',
@@ -182,12 +174,8 @@ export const topLevelRoutes = [
   },
 ] satisfies [RouteObject, ...RouteObject[]];
 
-const createBrowserRouter = wrapCreateBrowserRouterV6(
-  reactRouterCreateBrowserRouter
-);
-export const router = (
-  window.SENTRY_RELEASE ? createBrowserRouter : reactRouterCreateBrowserRouter
-)(topLevelRoutes, {
+// Use standard router without Sentry wrapping for offline-first mode
+export const router = reactRouterCreateBrowserRouter(topLevelRoutes, {
   basename: environment.subPath,
   future: {
     v7_normalizeFormMethod: true,

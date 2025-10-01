@@ -8,6 +8,7 @@ export { AuthProvider } from './provider/auth';
 export { ValidatorProvider } from './provider/validator';
 export { ServerScope } from './scopes/server';
 export { AuthService } from './services/auth';
+export { AuthServiceMock, AuthStoreMock, AuthSessionMock } from './services/auth-mock';
 export { CaptchaService } from './services/captcha';
 export { DefaultServerService } from './services/default-server';
 export { DocCreatedByUpdatedBySyncService } from './services/doc-created-by-updated-by-sync';
@@ -59,6 +60,7 @@ import { ValidatorProvider } from './provider/validator';
 import { ServerScope } from './scopes/server';
 import { InvitationService } from './services/invitation';
 import { AuthService } from './services/auth';
+import { AuthServiceMock, AuthStoreMock, AuthSessionMock } from './services/auth-mock';
 import { BlocksuiteWriterInfoService } from './services/blocksuite-writer-info';
 import { CaptchaService } from './services/captcha';
 import { CloudDocMetaService } from './services/cloud-doc-meta';
@@ -123,21 +125,35 @@ export function configureCloudModule(framework: Framework) {
         f.get(FetchService),
         f.getOptional(ValidatorProvider)
       );
-    })
-    .service(AuthService, [
-      FetchService,
-      AuthStore,
-      UrlService,
-      GlobalDialogService,
-    ])
-    .store(AuthStore, [
-      FetchService,
-      GraphQLService,
-      GlobalState,
-      ServerService,
-      AuthProvider,
-    ])
-    .entity(AuthSession, [AuthStore])
+    });
+
+  // Use offline-first mock services
+  const isOfflineMode = true; // For now, always use offline mode
+  
+  if (isOfflineMode) {
+    framework
+      .service(AuthService, () => new AuthServiceMock())
+      .store(AuthStore, () => new AuthStoreMock())
+      .entity(AuthSession, () => new AuthSessionMock());
+  } else {
+    framework
+      .service(AuthService, [
+        FetchService,
+        AuthStore,
+        UrlService,
+        GlobalDialogService,
+      ])
+      .store(AuthStore, [
+        FetchService,
+        GraphQLService,
+        GlobalState,
+        ServerService,
+        AuthProvider,
+      ])
+      .entity(AuthSession, [AuthStore]);
+  }
+
+  framework
     .service(SubscriptionService, [SubscriptionStore])
     .store(SubscriptionStore, [
       GraphQLService,

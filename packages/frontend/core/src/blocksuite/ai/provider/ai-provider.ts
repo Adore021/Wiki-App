@@ -1,5 +1,5 @@
 import type { EditorHost } from '@blocksuite/affine/std';
-import { captureException } from '@sentry/react';
+// Sentry import disabled for offline-first mode
 import { BehaviorSubject, Subject } from 'rxjs';
 
 import type { ChatContextValue } from '../components/ai-chat-content';
@@ -237,12 +237,10 @@ export class AIProvider {
                   options,
                   event: 'aborted:server-error',
                 });
-                captureException(err, {
+                console.error('AI action error:', err, {
                   user: { id: user?.id },
-                  extra: {
-                    action: id,
-                    session: AIProvider.LAST_ACTION_SESSIONID,
-                  },
+                  action: id,
+                  session: AIProvider.LAST_ACTION_SESSIONID,
                 });
               }
               throw err;
@@ -274,12 +272,10 @@ export class AIProvider {
                 event: 'aborted:paywall',
               });
             } else {
-              captureException(err, {
+              console.error('AI action error:', err, {
                 user: { id: user?.id },
-                extra: {
-                  action: id,
-                  session: AIProvider.LAST_ACTION_SESSIONID,
-                },
+                action: id,
+                session: AIProvider.LAST_ACTION_SESSIONID,
               });
             }
             throw err;
